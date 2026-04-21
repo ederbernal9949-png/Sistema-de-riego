@@ -5,21 +5,13 @@ from models_db import RegistroHumedad
 
 router = APIRouter()
 
-
 config = {
-    "humedad_minima": 500  
+    "humedad_minima": 500
 }
 
 @router.get("/")
 def inicio():
     return {"mensaje": "Sistema de riego activo"}
-
-
-@router.post("/configurar")
-def configurar(c: Config):
-    config["humedad_minima"] = c.humedad_minima
-    return {"mensaje": "Configuración actualizada"}
-
 
 @router.post("/evaluar")
 def evaluar(data: Sensores):
@@ -46,3 +38,35 @@ def evaluar(data: Sensores):
     db.close()
 
     return resultado
+
+
+@router.get("/historial")
+def historial():
+    db = SessionLocal()
+    datos = db.query(RegistroHumedad).all()
+    db.close()
+    return datos
+
+
+@router.get("/grafica")
+def grafica():
+    db = SessionLocal()
+    datos = db.query(RegistroHumedad).all()
+    db.close()
+
+    return [
+        {
+            "h1": d.humedad1,
+            "h2": d.humedad2,
+            "h3": d.humedad3,
+            "h4": d.humedad4,
+            "fecha": str(d.fecha)
+        }
+        for d in datos
+    ]
+
+
+@router.post("/configurar")
+def configurar(c: Config):
+    config["humedad_minima"] = c.humedad_minima
+    return {"mensaje": "Configuración actualizada"}
